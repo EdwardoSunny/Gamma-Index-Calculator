@@ -1,19 +1,23 @@
+__author__ = "Edward Sun, Torrey Pines High School, 2021"
+__email__ = "edward.sun2015@gmail.com"
+
 import math
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
 from scipy.interpolate import interp1d
 
-
-image = [2.01, 1.99, 2, 10, 15] # image
+# configurable constants
+refPos = 1
+image = [2.01, 1.99, 2, 10, 15, 10, 2, 3, 4, 6, 2.2, 1, 10, 4, 5, 6, 6, 7] # image
 spacing = 1 # pixel spacing, scaling between pixel and real life, real units/pixel (e.g. mm/pixel)
-
-refPos = 2
-
 search_size = 4 # real units (e.g. mm)
 search_percent = 0.03 # decimal standing for percent
-
 step_size = 1 # real units (e.g. mm)
+left_image_bound = 3 # set by person, draw, etc. in pixels
+right_image_bound = 10 # set by person, draw, etc. in pixels
+
+# static constants 
 left_edge = 1 if refPos - search_size <= 0 else (refPos - search_size) * spacing
 right_edge = (len(image)) * spacing if refPos + search_size > len(image) * spacing else refPos + search_size
 
@@ -45,14 +49,11 @@ def get_pixel_pos(n):
 def get_1D_gamma_full_for_one_pixel(refPos):
     imageList = pixel_list_to_real(image)
     imageList = image_to_interp_data(image)
-    print(imageList[0])
-    print(imageList[1])
     lin_val_interp = interp1d(imageList[0], imageList[1])
-    print('intr 3:' + str(lin_val_interp(1)))
     refVal = lin_val_interp(refPos)
 
-    # forwards search
-    i = refPos
+    # forwards search, no '+ step_size if want refPos itself gamma calculated with itself(=0.0)'
+    i = refPos + step_size
     gamma = []
     pos = []
 
@@ -67,7 +68,6 @@ def get_1D_gamma_full_for_one_pixel(refPos):
 
     # backwards search
     i = refPos - step_size
-    print(i)
     while (i >= left_edge):
         currVal = lin_val_interp(i)
         # if currGamma <= 1, pass
@@ -78,25 +78,48 @@ def get_1D_gamma_full_for_one_pixel(refPos):
 
     return gamma
 
-# def get_gamma_image():
+def get_passing_rate():
+    totalPass = 0
+    for i in range(0, len(image)):
+        currGammaList = get_1D_gamma_full_for_one_pixel(image[i])
+        currGamma = min(currGammaList)
+        if (currGamma <= 1):
+            totalPass += 1
+    passDecimal = totalPass/len(image)
+
+    return str(passDecimal * 100) + '%'
+
+def get_gamma_image():
+    gammaImage = []
+    for i in range(0, len(image)):
+        currGammaList = get_1D_gamma_full_for_one_pixel(image[i])
+        gammaImage.append(min(currGammaList))
+    imageArr = arrays_to_img(gammaImage, get_pixel_pos(len(gammaImage)))
+    npImageArr = np.array(imageArr)
+    return npImageArr
+
+def get_bound_img():
+    img = image[left_image_bound:right_image_bound+1]
+    return img
 
 
 
 def main():
-    # imageArr = arrays_to_img(image, get_pixel_pos(len(image)))
-    # npImageArr = np.array(imageArr)
-    # print(npImageArr)
-    # imgOriginal = plt.imshow(npImageArr)
-    # plt.show()
+    image = get_bound_img()
     
-    # gammaImgSize = left_edge - right_edge + 1
-    # gamma = arrays_to_img(get_1D_gamma_full_for_one_pixel(refPos), get_pixel_pos(gammaImgSize))
-    # npGammaArr = np.array(gamma)
-    # imgGamma = plt
-    print(get_1D_gamma_full_for_one_pixel(refPos))
+    plt.figure("Orginial Image")
+    imageArr = arrays_to_img(image, get_pixel_pos(len(image)))
+    npImageArr = np.array(imageArr)
+    imgOriginal = plt.imshow(npImageArr, cmap='gray')
+    # print(npImageArr)
+   
+    plt.figure("Gamma Image")
+    npGammaArr = get_gamma_image()
+    gammaImg = plt.imshow(npGammaArr, cmap='gray')
+    # print(npGammaArr)
+    plt.text(-5, -1.5, 'Passing Rate: ' + str(get_passing_rate()), bbox=dict(fill=False, edgecolor='red', linewidth=3))
 
-
-
+    plt.show()
     
 
 if (__name__ == '__main__'):
