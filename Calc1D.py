@@ -1,4 +1,4 @@
-__author__ = "Edward Sun, Torrey Pines High School, 2021"
+__author__ = "Edward Sun, Torrey Pines High School, 2022"
 __email__ = "edward.sun2015@gmail.com"
 
 import math
