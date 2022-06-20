@@ -8,7 +8,6 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 # configurable constants
-refPos = 1
 image = [2.01, 1.99, 2, 10, 15, 10, 2, 3, 4, 6, 2.2, 1, 10, 4, 5, 6, 6, 7] # image
 spacing = 1 # pixel spacing, scaling between pixel and real life, real units/pixel (e.g. mm/pixel)
 search_size = 4 # real units (e.g. mm)
@@ -18,8 +17,7 @@ left_image_bound = 3 # set by person, draw, etc. in pixels
 right_image_bound = 10 # set by person, draw, etc. in pixels
 
 # static constants 
-left_edge = 1 if refPos - search_size <= 0 else (refPos - search_size) * spacing
-right_edge = (len(image)) * spacing if refPos + search_size > len(image) * spacing else refPos + search_size
+image = image[left_image_bound:right_image_bound+1]
 
 def pixel_list_to_real(img):
     for i in img:
@@ -47,8 +45,14 @@ def get_pixel_pos(n):
 
 # gets the Gamma for one pixel
 def get_1D_gamma_full_for_one_pixel(refPos):
+    left_edge = 1 if refPos - search_size <= 0 else (refPos - search_size) * spacing
+    right_edge = (len(image)) * spacing if refPos + search_size > len(image) * spacing else refPos + search_size
+
     imageList = pixel_list_to_real(image)
     imageList = image_to_interp_data(image)
+    print(imageList[0])
+    print(imageList[1])
+    print(refPos)
     lin_val_interp = interp1d(imageList[0], imageList[1])
     refVal = lin_val_interp(refPos)
 
@@ -81,7 +85,7 @@ def get_1D_gamma_full_for_one_pixel(refPos):
 def get_passing_rate():
     totalPass = 0
     for i in range(0, len(image)):
-        currGammaList = get_1D_gamma_full_for_one_pixel(image[i])
+        currGammaList = get_1D_gamma_full_for_one_pixel(i+1)
         currGamma = min(currGammaList)
         if (currGamma <= 1):
             totalPass += 1
@@ -92,21 +96,14 @@ def get_passing_rate():
 def get_gamma_image():
     gammaImage = []
     for i in range(0, len(image)):
-        currGammaList = get_1D_gamma_full_for_one_pixel(image[i])
+        print(i)
+        currGammaList = get_1D_gamma_full_for_one_pixel(i+1)
         gammaImage.append(min(currGammaList))
     imageArr = arrays_to_img(gammaImage, get_pixel_pos(len(gammaImage)))
     npImageArr = np.array(imageArr)
     return npImageArr
 
-def get_bound_img():
-    img = image[left_image_bound:right_image_bound+1]
-    return img
-
-
-
 def main():
-    image = get_bound_img()
-    
     plt.figure("Orginial Image")
     imageArr = arrays_to_img(image, get_pixel_pos(len(image)))
     npImageArr = np.array(imageArr)
@@ -117,7 +114,7 @@ def main():
     npGammaArr = get_gamma_image()
     gammaImg = plt.imshow(npGammaArr, cmap='gray')
     # print(npGammaArr)
-    plt.text(-5, -1.5, 'Passing Rate: ' + str(get_passing_rate()), bbox=dict(fill=False, edgecolor='red', linewidth=3))
+    plt.text(-5, 0, 'Passing Rate: ' + str(get_passing_rate()), bbox=dict(fill=False, edgecolor='red', linewidth=3))
 
     plt.show()
     
