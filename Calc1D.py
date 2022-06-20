@@ -13,11 +13,12 @@ spacing = 1 # pixel spacing, scaling between pixel and real life, real units/pix
 search_size = 4 # real units (e.g. mm)
 search_percent = 0.03 # decimal standing for percent
 step_size = 1 # real units (e.g. mm)
-left_image_bound = 3 # set by person, draw, etc. in pixels
-right_image_bound = 10 # set by person, draw, etc. in pixels
+left_image_bound = 0 # set by person, draw, etc. in pixels, 0 indexing
+right_image_bound = 7 # set by person, draw, etc. in pixels, 0 indexing
 
 # static constants 
 image = image[left_image_bound:right_image_bound+1]
+print("bounded image: " + str(image))
 
 def pixel_list_to_real(img):
     for i in img:
@@ -50,9 +51,6 @@ def get_1D_gamma_full_for_one_pixel(refPos):
 
     imageList = pixel_list_to_real(image)
     imageList = image_to_interp_data(image)
-    print(imageList[0])
-    print(imageList[1])
-    print(refPos)
     lin_val_interp = interp1d(imageList[0], imageList[1])
     refVal = lin_val_interp(refPos)
 
@@ -96,9 +94,12 @@ def get_passing_rate():
 def get_gamma_image():
     gammaImage = []
     for i in range(0, len(image)):
-        print(i)
         currGammaList = get_1D_gamma_full_for_one_pixel(i+1)
-        gammaImage.append(min(currGammaList))
+        print("Gamma for pixel " + str(i+1))
+        print(currGammaList)
+        currGamma = min(currGammaList)
+        print(currGamma)
+        gammaImage.append(currGamma)
     imageArr = arrays_to_img(gammaImage, get_pixel_pos(len(gammaImage)))
     npImageArr = np.array(imageArr)
     return npImageArr
