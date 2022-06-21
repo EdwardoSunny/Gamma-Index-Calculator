@@ -1,13 +1,13 @@
 from scipy.interpolate import interp1d
 
-X = [1, 2, 3, 4, 5, 6, 7, 8]
+X = [0, 2, 3, 4, 5, 6, 7, 8]
 
-Y = [10, 15, 10, 2, 3, 4, 6, 2.2] # random y values
+Y = [1,2,3,6,5,6,7,8] # random y values
 
 
 
 # test value
-interpolate_x = 1
+interpolate_x = 4
 
 # Finding the interpolation
 y_interp = interp1d(X, Y)
