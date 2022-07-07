@@ -1,2 +1,2 @@
-for i in range(0, 10, 1):
-      print("fuck")
+test = [[0, 1, 2], [1,2,3]]
+print(test[0, 1])

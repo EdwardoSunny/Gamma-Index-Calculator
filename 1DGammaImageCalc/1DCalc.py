@@ -23,6 +23,9 @@ image1 = image1[left_image_bound:right_image_bound+1]
 image2 = image2[left_image_bound:right_image_bound+1]
 print("bounded image: " + str(image1))
 
+gammaImage = []
+
+
 def test_image_pos_to_interp_data(img):
     # [xs, ys]
     coordinateList = [[], image2]
@@ -109,7 +112,6 @@ def get_passing_rate():
 def get_gamma_image():
     # refPos is from reference image, original
     # testing if test image is similar to original, low gamma = same
-    gammaImage = []
     # for every pixel on the original image, get the gamma value from doing algorithm on the test image
     for i in range(0, len(image1)):
         currGammaList = get_1D_gamma_full_for_one_pixel(i)
