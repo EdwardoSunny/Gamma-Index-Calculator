@@ -29,7 +29,7 @@ test = cv2.imread('2DGammaImageCalc/testImage.jpg', 0) # test image
 spacing = 0.1 # pixel spacing, scaling between pixel and real life, real units/pixel (e.g. mm/pixel)
 search_radius = 1 # real units (e.g. mm)
 search_percent = 0.1 # decimal standing for percent
-radial_step_size = 0.0001 # real units (e.g. mm)
+radial_step_size = 1 # real units (e.g. mm)
 angular_step_size = 1 # degrees
 
 # find edge bdoing try catch
@@ -66,11 +66,14 @@ def get_2D_gamma_full_for_one_pixel(refPos):
     yRefRealPos = refPos[1]*spacing
 
     # in real units (mm)
-    for r in range(radial_step_size, search_radius+radial_step_size, radial_step_size):
-        for theta in range(angular_step_size, 360+angular_step_size, angular_step_size):
+
+    rCount = radial_step_size
+    while (rCount < search_radius+radial_step_size):
+        thetaCount = angular_step_size
+        while (thetaCount < 360+angular_step_size):
             # starting with the positive x axis, ccw
-            yTestBasedOnStartPos = r * math.sin(math.radians(theta))
-            xTestBasedOnStartPos = r * math.cos(math.radians(theta))
+            yTestBasedOnStartPos = rCount * math.sin(math.radians(thetaCount))
+            xTestBasedOnStartPos = rCount * math.cos(math.radians(thetaCount))
 
             # refPos is where the current reference pixel is, since
             # the calculations above is relative to where the reference pixel is,
@@ -79,12 +82,12 @@ def get_2D_gamma_full_for_one_pixel(refPos):
             # real x, y test positions
             # otherwise everything is positive
             
-            if (theta >= 0 and theta <= 90):
+            if (thetaCount >= 0 and thetaCount <= 90):
                 yTestBasedOnStartPos *= -1
-            elif (theta > 90 and theta <= 180):
+            elif (thetaCount > 90 and thetaCount <= 180):
                 xTestBasedOnStartPos *= -1
                 yTestBasedOnStartPos *= -1
-            elif (theta > 180 and theta <= 270):
+            elif (thetaCount > 180 and thetaCount <= 270):
                 xTestBasedOnStartPos *= -1
 
             xTestRealPos = xTestBasedOnStartPos + refPos[0]
@@ -95,6 +98,8 @@ def get_2D_gamma_full_for_one_pixel(refPos):
                 currentToTestDistance = abs(math.sqrt(((xRefRealPos - xTestRealPos) ** 2) + ((yRefRealPos - yTestRealPos) ** 2)))
                 currGamma = math.sqrt((((currentToTestDistance) ** 2) / search_radius) + ((refVal - currVal) ** 2) / search_percent)
                 gammaList.append(currGamma) 
+            thetaCount += angular_step_size
+        rCount += radial_step_size
         
     return gammaList
 
