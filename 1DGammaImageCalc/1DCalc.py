@@ -4,6 +4,10 @@ import matplotlib.image as mpimg
 import numpy as np
 from scipy.interpolate import interp1d
 
+# image geometry
+# 0mm, 1mm, 2mm, 3mm, etc.
+# pixel 0, pixel 1, pixel 2, etc.
+
 # configurable constants
 image1 = [10, 10, 10, 10, 15, 10, 2, 3, 4, 6, 2.2, 1, 10, 4, 5, 6, 6, 7] # reference image
 image2 = [10, 10.3, 6, 10.1, 12, 7, 2, 3, 4, 6, 2.2, 1, 10, 4, 5, 6, 6, 7] # test image
@@ -19,17 +23,18 @@ image1 = image1[left_image_bound:right_image_bound+1]
 image2 = image2[left_image_bound:right_image_bound+1]
 print("bounded image: " + str(image1))
 
-def pixel_list_to_real(img):
-    for i in img:
-        i *= spacing
-    return img
-
-def test_image_to_interp_data(img):
+def test_image_pos_to_interp_data(img):
     # [xs, ys]
     coordinateList = [[], image2]
     for i in range(1, len(img)+1):
         coordinateList[0].append(i)
     return coordinateList
+
+def image_data_to_real_units(posData):
+    for i in posData:
+        i *= spacing
+    return posData
+
 
 def arrays_to_img(pixelVal, pixelPos):
     pixelArr = []
@@ -48,13 +53,16 @@ def get_1D_gamma_full_for_one_pixel(refPos):
     # refPos is from original image
 
     # define edges of the search based on the search_size window
+    # units are in pixel index
     left_edge = 0 if refPos * spacing - search_size <= 0 else (refPos * spacing - search_size) 
     right_edge = (len(image2)) * spacing if refPos * spacing + search_size > len(image2) * spacing else refPos * spacing + search_size
 
     # imageList is based on image2 (the image we are comparing to)
-    imageList = pixel_list_to_real(image2)
-    imageList = test_image_to_interp_data(image2)
-    imageList[0] = [0, *imageList[0]]
+    imageList = image2
+    imageList = test_image_pos_to_interp_data(image2)
+    # x vals
+    imageList[0] = image_data_to_real_units([0, *imageList[0]])
+    # y vals
     imageList[1] = [image2[0], *imageList[1]]
 
     lin_val_interp = interp1d(imageList[0], imageList[1])
@@ -134,4 +142,3 @@ def main():
 
 if (__name__ == '__main__'):
     main()
-    

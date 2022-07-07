@@ -12,6 +12,7 @@ from scipy import interpolate
 # 0 1 2 3 4 5
 # ...
 # y
+# [y][x]
 
 # real units (mm) wise
 # 0 1 2 3 4 5 x
@@ -19,6 +20,7 @@ from scipy import interpolate
 # 2 3 4 5 6 7
 # 3 4 5 6 7 8
 # y
+# [y][x]
 
 # read as gray scale
 reference = cv2.imread('2DGammaImageCalc/referenceImage.jpg', 0) # reference image
@@ -64,8 +66,8 @@ def get_2D_gamma_full_for_one_pixel(refPos):
     yRefRealPos = refPos[1]*spacing
 
     # in real units (mm)
-    for r in range(radial_step_size, search_radius, radial_step_size):
-        for theta in range(0, 360, angular_step_size):
+    for r in range(radial_step_size, search_radius+radial_step_size, radial_step_size):
+        for theta in range(angular_step_size, 360+angular_step_size, angular_step_size):
             # starting with the positive x axis, ccw
             yTestBasedOnStartPos = r * math.sin(math.radians(theta))
             xTestBasedOnStartPos = r * math.cos(math.radians(theta))
@@ -75,7 +77,8 @@ def get_2D_gamma_full_for_one_pixel(refPos):
             # must add to find where it actually is (localize the vector)
 
             # real x, y test positions
-
+            # otherwise everything is positive
+            
             if (theta >= 0 and theta <= 90):
                 yTestBasedOnStartPos *= -1
             elif (theta > 90 and theta <= 180):
@@ -83,25 +86,21 @@ def get_2D_gamma_full_for_one_pixel(refPos):
                 yTestBasedOnStartPos *= -1
             elif (theta > 180 and theta <= 270):
                 xTestBasedOnStartPos *= -1
-            # otherwise everything is positive
 
             xTestRealPos = xTestBasedOnStartPos + refPos[0]
             yTestRealPos = yTestBasedOnStartPos + refPos[1]
-
-
-            try:
+            
+            if not(xTestRealPos < 0 or xTestRealPos > testXData[len(testXData)-1] or yTestRealPos < 0 or yTestRealPos > testXData[len(testXData)-1]):
                 currVal = interpFunction(xTestRealPos, yTestRealPos)
                 currentToTestDistance = abs(math.sqrt(((xRefRealPos - xTestRealPos) ** 2) + ((yRefRealPos - yTestRealPos) ** 2)))
                 currGamma = math.sqrt((((currentToTestDistance) ** 2) / search_radius) + ((refVal - currVal) ** 2) / search_percent)
-
-                gammaList.append(currGamma)
-            except ValueError:
-                pass
-
+                gammaList.append(currGamma) 
+        
     return gammaList
 
 def main():
-    print(get_2D_gamma_full_for_one_pixel([0, 0]))
+    gammaData = get_2D_gamma_full_for_one_pixel([1,1])
+    print(min(gammaData))
 
 if (__name__ == '__main__'):
     main()
