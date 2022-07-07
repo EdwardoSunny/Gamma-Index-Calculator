@@ -26,10 +26,10 @@ from scipy import interpolate
 reference = cv2.imread('2DGammaImageCalc/referenceImage.jpg', 0) # reference image
 test = cv2.imread('2DGammaImageCalc/testImage.jpg', 0) # test image
 #
-spacing = 1 # pixel spacing, scaling between pixel and real life, real units/pixel (e.g. mm/pixel)
-search_radius = 4 # real units (e.g. mm)
+spacing = 0.1 # pixel spacing, scaling between pixel and real life, real units/pixel (e.g. mm/pixel)
+search_radius = 1 # real units (e.g. mm)
 search_percent = 0.1 # decimal standing for percent
-radial_step_size = 1 # real units (e.g. mm)
+radial_step_size = 0.0001 # real units (e.g. mm)
 angular_step_size = 1 # degrees
 
 # find edge bdoing try catch
