@@ -1,2 +1,3 @@
-test = [[0, 1, 2], [1,2,3]]
-print(test[0, 1])
+test = 0
+test += 10
+print(test)

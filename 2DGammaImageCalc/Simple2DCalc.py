@@ -26,8 +26,8 @@ from scipy import interpolate
 # definition of 0mm is at the left edge of the first pixel
 
 # read as gray scale
-reference = cv2.imread('2DGammaImageCalc/referenceImage.jpg', 0) # reference image
-test = cv2.imread('2DGammaImageCalc/testImage.jpg', 0) # test image
+reference = cv2.imread('ref2.jpg', 0) # reference image
+test = cv2.imread('ref2.jpg', 0) # test image
 #
 spacing = 0.1 # pixel spacing, scaling between pixel and real life, real units/pixel (e.g. mm/pixel)
 search_radius = 1 # real units (e.g. mm)
@@ -36,7 +36,6 @@ radial_step_size = 1 # real units (e.g. mm)
 angular_step_size = 1 # degrees
 
 gammaImage = []
-passingTotal = []
 
 def test_image_pos_to_real_units(imgDimData):
     for i in imgDimData:
@@ -69,11 +68,17 @@ def get_2D_gamma_full_for_one_pixel(refPos):
     xRefRealPos = refPos[0]*spacing
     yRefRealPos = refPos[1]*spacing
 
+    print("ref" + str(xRefRealPos))
+    print(yRefRealPos)
+
+
     # in real units (mm)
 
-    rCount = radial_step_size
+    rCount = 0
+    thetaCount = 0
     while (rCount < search_radius+radial_step_size):
-        thetaCount = angular_step_size
+        rCount += radial_step_size
+        print(rCount)
         while (thetaCount < 360+angular_step_size):
             # starting with the positive x axis, ccw
             xTestBasedOnStartPos = rCount * math.cos(math.radians(thetaCount))
@@ -89,14 +94,16 @@ def get_2D_gamma_full_for_one_pixel(refPos):
             yTestRealPos = yTestBasedOnStartPos + refPos[1]
     
             if not(xTestRealPos < 0 or xTestRealPos > testXData[len(testXData)-1] or yTestRealPos < 0 or yTestRealPos > testXData[len(testXData)-1]):
+                # if (rCount == radial_step_size):
+                #     print(thetaCount)
                 currVal = interpFunction(xTestRealPos, yTestRealPos)
+                # maybe this is wrong
                 currentToTestDistance = abs(math.sqrt(((xRefRealPos - xTestRealPos) ** 2) + ((yRefRealPos - yTestRealPos) ** 2)))
                 currGamma = math.sqrt((((currentToTestDistance) ** 2) / search_radius) + ((refVal - currVal) ** 2) / search_percent)
-                gammaList.append(currGamma) 
-            thetaCount += angular_step_size
-            
-        rCount += radial_step_size
-        
+                gammaList.append(currGamma)
+            print(thetaCount)
+            thetaCount += angular_step_size        
+    
     return gammaList
 
 def get_zero_matrix(n, m):
@@ -113,11 +120,23 @@ def get_gamma_image():
     for y in range(0, len(reference)):
         currentRow = []
         for x in range(0, len(reference[0])):
+            print("x: " + str(x) + " y: " + str(y))
             currFullGamma = get_2D_gamma_full_for_one_pixel([x, y])
             currGamma = min(currFullGamma)
             currentRow.append(currGamma)
         gammaImage.append(currentRow)
+    print(gammaImage)
     return gammaImage
+
+def get_passing_rate():
+    totalPass = 0
+    for gammaRow in gammaImage:
+        for gammaVal in gammaRow:
+            if (gammaVal <= 1):
+                totalPass += 1
+    passDecimal = totalPass/len(gammaImage)
+    print(totalPass)
+    return str(passDecimal * 100) + '%'
 
 def main():
     gammaImage = get_gamma_image()
@@ -133,6 +152,9 @@ def main():
     plt.figure("Gamma Image")
     npGammaImageArr = np.array(gammaImage)
     imgGamma = plt.imshow(npGammaImageArr, cmap='gray')
+    passingRate = get_passing_rate()
+    plt.text(-2, -1, 'Passing Rate: ' + str(passingRate), bbox=dict(fill=False, edgecolor='red', linewidth=3))
+
 
     plt.show()
 

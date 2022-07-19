@@ -9,8 +9,8 @@ from scipy.interpolate import interp1d
 # pixel 0, pixel 1, pixel 2, etc.
 
 # configurable constants
-image1 = [10, 10, 10, 10, 15, 10, 2, 3, 4, 6, 2.2, 1, 10, 4, 5, 6, 6, 7] # reference image
-image2 = [10, 10.3, 6, 10.1, 12, 7, 2, 3, 4, 6, 2.2, 1, 10, 4, 5, 6, 6, 7] # test image
+image1 = [10, 10, 10, 10]# [10, 10, 10, 10, 15, 10, 2, 3, 4, 6, 2.2, 1, 10, 4, 5, 6, 6, 7] # reference image
+image2 = [10, 10, 10, 10]# [10, 10.3, 6, 10.1, 12, 7, 2, 3, 4, 6, 2.2, 1, 10, 4, 5, 6, 6, 7] # test image
 spacing = 0.5 # pixel spacing, scaling between pixel and real life, real units/pixel (e.g. mm/pixel)
 search_size = 4 # real units (e.g. mm)
 search_percent = 0.1 # decimal standing for percent
@@ -137,7 +137,8 @@ def main():
     plt.figure("Gamma Image")
     npGammaArr = get_gamma_image()
     gammaImg = plt.imshow(npGammaArr, cmap='gray')
-    plt.text(-5, 0, 'Passing Rate: ' + str(get_passing_rate()), bbox=dict(fill=False, edgecolor='red', linewidth=3))
+    passingRate = get_passing_rate()
+    plt.text(-5, 0, 'Passing Rate: ' + str(passingRate), bbox=dict(fill=False, edgecolor='red', linewidth=3))
 
     plt.show()
     
