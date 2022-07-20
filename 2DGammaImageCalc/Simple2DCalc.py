@@ -77,23 +77,21 @@ def get_2D_gamma_full_for_one_pixel(refPos):
     rCount = 0
     thetaCount = 0
     while (rCount < search_radius+radial_step_size):
-        rCount += radial_step_size
         print(rCount)
         while (thetaCount < 360+angular_step_size):
             # starting with the positive x axis, ccw
-            xTestBasedOnStartPos = rCount * math.cos(math.radians(thetaCount))
+            xTestBasedOnStartPos = rCount * math.cos(math.radians(thetaCount)) * spacing
             # multiply -1 to redfine stupid coord sys
-            yTestBasedOnStartPos = rCount * math.sin(math.radians(thetaCount)) * -1
+            yTestBasedOnStartPos = rCount * math.sin(math.radians(thetaCount)) * -1 * spacing
 
 
             # refPos is where the current reference pixel is, since
             # the calculations above is relative to where the reference pixel is,
             # must add to find where it actually is (localize the vector)
 
-            xTestRealPos = xTestBasedOnStartPos + refPos[0]
-            yTestRealPos = yTestBasedOnStartPos + refPos[1]
-    
-            if not(xTestRealPos < 0 or xTestRealPos > testXData[len(testXData)-1] or yTestRealPos < 0 or yTestRealPos > testXData[len(testXData)-1]):
+            xTestRealPos = xTestBasedOnStartPos + xRefRealPos
+            yTestRealPos = yTestBasedOnStartPos + yRefRealPos
+            if not(xTestRealPos < 0 or xTestRealPos > len(testXData)-1 or yTestRealPos < 0 or yTestRealPos > len(testYData)-1):
                 # if (rCount == radial_step_size):
                 #     print(thetaCount)
                 currVal = interpFunction(xTestRealPos, yTestRealPos)
@@ -101,8 +99,8 @@ def get_2D_gamma_full_for_one_pixel(refPos):
                 currentToTestDistance = abs(math.sqrt(((xRefRealPos - xTestRealPos) ** 2) + ((yRefRealPos - yTestRealPos) ** 2)))
                 currGamma = math.sqrt((((currentToTestDistance) ** 2) / search_radius) + ((refVal - currVal) ** 2) / search_percent)
                 gammaList.append(currGamma)
-            print(thetaCount)
-            thetaCount += angular_step_size        
+            thetaCount += angular_step_size
+            rCount += radial_step_size        
     
     return gammaList
 
@@ -125,7 +123,6 @@ def get_gamma_image():
             currGamma = min(currFullGamma)
             currentRow.append(currGamma)
         gammaImage.append(currentRow)
-    print(gammaImage)
     return gammaImage
 
 def get_passing_rate():
@@ -134,8 +131,7 @@ def get_passing_rate():
         for gammaVal in gammaRow:
             if (gammaVal <= 1):
                 totalPass += 1
-    passDecimal = totalPass/len(gammaImage)
-    print(totalPass)
+    passDecimal = totalPass/(len(gammaImage) * len(gammaImage[0]))
     return str(passDecimal * 100) + '%'
 
 def main():
